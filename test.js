@@ -2,6 +2,7 @@ const postcss = require('postcss');
 const theft = require('./index.js');
 
   postcss([
+    
     theft({url:'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css', source: ['.btn', '.text-muted'], target:'.my-button' }),
     theft({url:'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css', source: ['.text-uppercase'], target:'.my-button' }),
 

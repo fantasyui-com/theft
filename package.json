@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/fantasyui-com/theft#readme",
   "dependencies": {
-    "async-request": "^1.2.0",
     "postcss": "^6.0.8",
+    "request": "^2.81.0",
     "select-declarations": "^1.0.6"
   }
 }

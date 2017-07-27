@@ -1,7 +1,16 @@
 const path = require('path');
 const postcss = require('postcss');
-const request = require('async-request');
+const _request = require('promised-request');
 const selectDeclarations = require('select-declarations');
+
+function request(url){
+  return new Promise(function(resolve, reject) {
+    _request(url, function (error, response, body) {
+      if(error) return reject(error);
+      resolve({response, body})
+    });
+  });
+}
 
 module.exports = postcss.plugin('theft', function theft(options) {
   return async function (css) {

@@ -1,27 +1,22 @@
+const path = require('path');
 const postcss = require('postcss');
-const skins = require('skins');
+const request = require('async-request');
+const selectDeclarations = require('select-declarations');
 
 module.exports = postcss.plugin('theft', function theft(options) {
-  return function (css) {
-    options = options || {
-      locations:[],
-      selectors:[],
-    };
-    const theme = options.theme;
+  return async function (css) {
+    options = options || {};
+    const code = options.css||((await request(options.url)).body);
+    const declarations = selectDeclarations(code, options.source);
     css.walkRules(function (rule) {
-      Object.keys(options.selectors).forEach(type=>{
-        const selectors = options.selectors[type];
-        if(selectors) selectors.forEach(selector=>{
-          if(rule.selector == selector){
-            try {
-              const response = skins({theme, type});
-              rule.append(response);
-            } catch(err){
-              console.log(err)
-            }
-          }
-        })
-      })
+      if(rule.selector == options.target){
+        try {
+          const code = declarations.map(i=>i.prop +': '+ i.value+ (i.important?'!important':'') + ';').join('\n');
+          rule.append(code);
+        } catch(err){
+          console.log(err)
+        }
+      }
   	});
   }
 });

@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/fantasyui-com/theft/issues"
   },
-  "homepage": "https://github.com/fantasyui-com/theft#readme"
+  "homepage": "https://github.com/fantasyui-com/theft#readme",
+  "dependencies": {
+    "async-request": "^1.2.0",
+    "postcss": "^6.0.8",
+    "select-declarations": "^1.0.6"
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "theft",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Means of transporting CSS rule declarations from one file to another.",
   "main": "index.js",
   "scripts": {

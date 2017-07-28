@@ -3,6 +3,7 @@ const postcss = require('postcss');
 const _request = require('request');
 const selectDeclarations = require('select-declarations');
 
+// wrapper for await compatible code
 function request(url){
   return new Promise(function(resolve, reject) {
     _request(url, function (error, response, body) {
@@ -15,42 +16,40 @@ function request(url){
 module.exports = postcss.plugin('theft', function theft(options) {
   return async function (css) {
 
-    options = options || {};
+    // Option schema
+    options = options || {
+      force:  undefined, // should create the selector if not found?
+      css:    undefined, // code to use is url is not present
+      url:    undefined, // url to get code from
+      source: undefined, // source selector for url/css
+      target: undefined, // target selector in the local file
+    };
 
+    // Remote concerns
     const code = options.css||((await request(options.url)).body);
     const declarations = selectDeclarations(code, options.source);
 
-    let selectorExists = false;
-    const matchingNodes = [];
+    // Local node(s) to inject remote code into
+    const matchingNodeReferences = [];
 
-    const appendRule = function (rule) {
-      if(rule.selector == options.target){
-        try {
-          const code = declarations.map(i=>i.prop +': '+ i.value+ (i.important?'!important':'') + ';').join('\n');
-          rule.append(code);
-        } catch(err){
-          console.log(err)
-        }
-      }
-    }
-
+    // Initial population. Here we are about to learn if nodes matching the target selector were found
     css.walkRules(function (rule) {
-      if(rule.selector == options.target){
-        matchingNodes.push(rule);
+      if(rule.selector == options.target){ // note: this is a STRING MATCH
+        matchingNodeReferences.push(rule);
       }
-  	});
+    });
 
-    if(matchingNodes.length > 0) selectorExists = true;
-
-    if(selectorExists) {
-      matchingNodes.forEach(appendRule);
-    }else{
-      if(options.force){
-        css.append(`\n${options.target} {}`);
-        css.walkRules(appendRule);
-      }
+    // If nothing is found, and .force is in effect append the rule (selector) that was not found
+    if( (matchingNodeReferences.length === 0) && (options.force) ) {
+        const newNode = postcss.rule({ selector: options.target });
+        css.append(newNode);
+        matchingNodeReferences.push(newNode);
     }
 
+    // Finally, append the remote declarations to the local nodes stored in matchingNodeReferences
+    matchingNodeReferences.forEach(function (rule) {
+      rule.append(declarations.map(i=>i.prop +': '+ i.value+ (i.important?'!important':'') + ';').join('\n'));
+    });
 
 
   }

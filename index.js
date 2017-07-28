@@ -1,6 +1,6 @@
 const path = require('path');
 const postcss = require('postcss');
-const _request = require('promised-request');
+const _request = require('request');
 const selectDeclarations = require('select-declarations');
 
 function request(url){

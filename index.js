@@ -14,10 +14,16 @@ function request(url){
 
 module.exports = postcss.plugin('theft', function theft(options) {
   return async function (css) {
+
     options = options || {};
+
     const code = options.css||((await request(options.url)).body);
     const declarations = selectDeclarations(code, options.source);
-    css.walkRules(function (rule) {
+
+    let selectorExists = false;
+    const matchingNodes = [];
+
+    const appendRule = function (rule) {
       if(rule.selector == options.target){
         try {
           const code = declarations.map(i=>i.prop +': '+ i.value+ (i.important?'!important':'') + ';').join('\n');
@@ -26,6 +32,26 @@ module.exports = postcss.plugin('theft', function theft(options) {
           console.log(err)
         }
       }
+    }
+
+    css.walkRules(function (rule) {
+      if(rule.selector == options.target){
+        matchingNodes.push(rule);
+      }
   	});
+
+    if(matchingNodes.length > 0) selectorExists = true;
+
+    if(selectorExists) {
+      matchingNodes.forEach(appendRule);
+    }else{
+      if(options.force){
+        css.append(`\n${options.target} {}`);
+        css.walkRules(appendRule);
+      }
+    }
+
+
+
   }
 });
